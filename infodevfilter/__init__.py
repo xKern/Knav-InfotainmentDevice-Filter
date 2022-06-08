@@ -29,7 +29,8 @@ def filtered_devices(device_model,
         if device_ids:
             devices = list(device_ids)
         if bus_ids:
-            bus_devices = Bus.objects.filter(id__in=bus_ids)
+            bus_identifiers = [bus_id.id for bus_id in bus_ids]
+            bus_devices = Bus.objects.filter(id__in=bus_identifiers)
             bus_devices = bus_devices.filter(info_device__isnull=False)
             bus_devices = list(
                 bus_devices.values_list("info_device_id", flat=True)
