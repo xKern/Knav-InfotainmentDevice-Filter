@@ -46,5 +46,6 @@ def filtered_devices(device_model,
         return response
 
     elif mask == 1:
-        response = get_online_status()
+        response = get_online_status(device_model=device_model)
         return response
+    return []

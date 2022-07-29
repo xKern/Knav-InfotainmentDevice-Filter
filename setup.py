@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 from pathlib import Path
 
-VERSION = '0.0.1'
+VERSION = '0.0.1-1'
 DESCRIPTION = 'InfotainmentDeviceFilter to be used across Knav projects'
 LONG_DESCRIPTION = Path('README.md').read_text()
 
