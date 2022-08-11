@@ -1,18 +1,20 @@
 from datetime import datetime, timedelta
+from django.db.models import Q
+from django.utils.timezone import now
 
 
 def get_online_status(device_model):
     InfoDevice = device_model
-    now = datetime.now()
+    time_now = now()
     devices = InfoDevice.objects.all()
     filterd_dev = []
     for dev in devices:
+        frq = dev.ping_frequency
         if dev.ping_time:
-            last_ping = dev.ping_time.strftime("%Y-%m-%d %H:%M:%S")
-            last_ping = datetime.strptime(last_ping, "%Y-%m-%d %H:%M:%S")
-            if last_ping >= now - timedelta(seconds=2 * dev.ping_frequency):
-                filterd_dev.append(dev)
-    return filterd_dev
+            if dev.ping_time >= time_now - timedelta(seconds=2 * frq):
+                filterd_dev.append(dev.id)
+    devices = InfoDevice.objects.filter(id__in=filterd_dev).all()
+    return devices
 
 
 def filtered_devices(device_model,
@@ -26,20 +28,14 @@ def filtered_devices(device_model,
     device_ids = targets.get("devices", [])
     if mask == -1:
         devices = []
+        busdev_id = []
         if device_ids:
-            devices = list(device_ids)
+            devices = [dev.id for dev in device_ids]
         if bus_ids:
-            bus_identifiers = [bus_id.id for bus_id in bus_ids]
-            bus_devices = Bus.objects.filter(id__in=bus_identifiers)
-            bus_devices = bus_devices.filter(info_device__isnull=False)
-            bus_devices = list(
-                bus_devices.values_list("info_device_id", flat=True)
-                )
-            bus_devices = list(
-                InfoDevice.objects.filter(id__in=bus_devices).all()
-                )
-            devices.extend(bus_devices)
-        return devices
+            busdev_id = [bus.info_device_id for bus in bus_ids]
+        devs = InfoDevice.objects.filter(
+            Q(id__in=devices) | Q(id__in=busdev_id)).all()
+        return devs
 
     elif mask == 0:
         response = InfoDevice.objects.all()
